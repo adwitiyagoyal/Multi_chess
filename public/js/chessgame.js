@@ -73,7 +73,7 @@ const handleMove = (source, target) => {
     };
 
     socket.emit("move", move);
-};
+}
 
 const getPieceUnicode = (piece) => {
     const unicodePieces = {
@@ -123,17 +123,21 @@ const setupWebRTC = () => {
             localVideo.srcObject = stream;
 
             peer = new SimplePeer({
-                initiator: true,
+                initiator: playerRole === 'w', // White player initiates the connection
                 trickle: false,
                 stream: stream
             });
 
             peer.on('signal', signal => {
-                socket.emit('signal', { signal: signal, target: (playerRole === 'w') ? players.black : players.white });
+                socket.emit('signal', { signal: signal, target: playerRole === 'w' ? players.black : players.white });
             });
 
             peer.on('stream', stream => {
                 remoteVideo.srcObject = stream;
+            });
+
+            peer.on('error', err => {
+                console.error('Peer error:', err);
             });
         })
         .catch(err => console.error('Error accessing media devices.', err));
