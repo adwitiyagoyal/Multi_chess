@@ -19,6 +19,10 @@ app.get("/", (req, res) => {
     res.render("index", { title: "chess" });
 });
 
+const sendPlayersUpdate = () => {
+    io.emit("players", players);
+};
+
 io.on("connection", (uniquesocket) => {
     console.log("connected");
     if (!players.white) {
@@ -31,7 +35,8 @@ io.on("connection", (uniquesocket) => {
         uniquesocket.emit("spectatorRole");
     }
 
-    uniquesocket.emit("boardState", chess.fen()); // Send the initial board state
+    uniquesocket.emit("boardState", chess.fen());
+    sendPlayersUpdate();
 
     uniquesocket.on("disconnect", () => {
         if (uniquesocket.id === players.white) {
@@ -39,6 +44,7 @@ io.on("connection", (uniquesocket) => {
         } else if (uniquesocket.id === players.black) {
             delete players.black;
         }
+        sendPlayersUpdate();
     });
 
     uniquesocket.on("move", (move) => {
@@ -61,7 +67,6 @@ io.on("connection", (uniquesocket) => {
         }
     });
 
-    // WebRTC signaling
     uniquesocket.on('signal', data => {
         const targetSocket = io.sockets.sockets.get(data.target);
         if (targetSocket) {

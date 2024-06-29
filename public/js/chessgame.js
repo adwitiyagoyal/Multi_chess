@@ -8,6 +8,7 @@ let draggedPiece = null;
 let sourceSquare = null;
 let playerRole = null;
 let peer = null;
+let players = { white: null, black: null }; // Define players object
 
 const renderBoard = () => {
     const board = chess.board();
@@ -114,6 +115,11 @@ socket.on("boardState", (fen) => {
 socket.on("move", (move) => {
     chess.move(move);
     renderBoard();
+});
+
+// Update player information
+socket.on("players", (playerData) => {
+    players = playerData;
 });
 
 // WebRTC setup
